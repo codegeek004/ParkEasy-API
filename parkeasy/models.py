@@ -3,6 +3,7 @@ from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, Permis
 
 class UserManager(BaseUserManager):
 	def create_user(self, email, name, tc, password=None, passwor2=None):
+		print('create user mai gaya')
 		"""
 		creates and saves the user with email, name, tc and password
 		"""
@@ -14,11 +15,15 @@ class UserManager(BaseUserManager):
 				name = name,
 				tc=tc
 			)
+		print('user ke niche')
 		user.set_password(password)
 		#saves into a database instance
+		print('user.save ke upar UserManager mau')
 		user.save(using=self._db)
+		return user
 
 	def create_superuser(self, email, name, tc, password=None, passwor2=None):
+		print('create superuser mai gaya')
 		if not email:
 			raise ValueError("You must have an email address")
 		user = self.create_user(
@@ -27,7 +32,9 @@ class UserManager(BaseUserManager):
 				name=name,
 				tc=tc 
 			)
+		print('user ke niche')
 		user.is_admin=True 
+		print('user.is_admin', user.is_admin)
 		user.is_superuser=True 
 		user.is_staff = True
 		user.save(using=self._db)
@@ -50,5 +57,6 @@ class User(AbstractBaseUser, PermissionsMixin):
 
 	def __str__(self):
 		return f"{self.email} {self.name}"
+
 
 
