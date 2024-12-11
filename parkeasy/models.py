@@ -1,5 +1,5 @@
 from django.db import models
-from django.contrib.auth.models import BaseUserManager, AbstractBaseUser
+from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
 
 class UserManager(BaseUserManager):
 	def create_user(self, email, name, tc, password=None, passwor2=None):
@@ -14,7 +14,7 @@ class UserManager(BaseUserManager):
 				name = name,
 				tc=tc
 			)
-		user.save_password(password)
+		user.set_password(password)
 		#saves into a database instance
 		user.save(using=self._db)
 
@@ -28,14 +28,18 @@ class UserManager(BaseUserManager):
 				tc=tc 
 			)
 		user.is_admin=True 
+		user.is_superuser=True 
+		user.is_staff = True
 		user.save(using=self._db)
 		return user
-
-class User(AbstractBaseUser):
+	
+class User(AbstractBaseUser, PermissionsMixin):
 	email = models.EmailField(verbose_name="email", max_length=255, unique=True)
+	name = models.CharField(max_length=255, blank=True)
 	tc = models.BooleanField()
 	is_active = models.BooleanField(default=True)
 	is_admin = models.BooleanField(default=False)
+	is_staff = models.BooleanField(default=False)
 	created_at = models.DateTimeField(auto_now_add=True)
 	updated_at = models.DateTimeField(auto_now=True)
 
@@ -45,9 +49,6 @@ class User(AbstractBaseUser):
 	REQUIRED_FIELDS = ["name","tc"]
 
 	def __str__(self):
-		return self.email 
-
-	
-
+		return f"{self.email} {self.name}"
 
 
