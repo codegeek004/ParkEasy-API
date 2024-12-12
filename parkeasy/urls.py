@@ -1,10 +1,11 @@
 from django.urls import path
-from rest_framework_simplejwt.views import (
-    TokenObtainPairView,
-    TokenRefreshView,
-)
+from parkeasy.views import *
 
 urlpatterns = [
-    path('api/token/', TokenObtainPairView.as_view(), name='token_obtain_pair'),
-    path('api/token/refresh/', TokenRefreshView.as_view(), name='token_refresh'),
+
+    path('accounts/register/', RegisterView.as_view(), name="register"),
+    path('accounts/login/', LoginView.as_view(), name="login"),
+    path('', HomeView.as_view(), name="home"),
+    path('vehicles/', VehicleView.as_view(), name='vehicles')
+   
 ]
