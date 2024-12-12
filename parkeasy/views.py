@@ -8,13 +8,8 @@ from parkeasy.serializers import RegisterSerializer, LoginSerializer, VehicleSer
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.generics import ListAPIView
 from .models import *
-from django.contrib.auth.decorators import login_required  
-from django.utils.decorators import method_decorator 
-#roles
-from .permissions import IsAdmin, IsUser
 from rest_framework.permissions import AllowAny
-
-from rest_framework.permissions import BasePermission
+from .permissions import IsAdmin
 
 
 class HomeView(APIView):
@@ -23,12 +18,16 @@ class HomeView(APIView):
         return Response({"message" : "Welcome to the JWT API"})
 
 class RegisterView(APIView):
+    print('register view class mai gaya')
     permission_classes = [AllowAny]
     def post(self, request):
+        print('post method mai gaya')
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
+            print('serializer is valid mai gaya')
             user = serializer.save()
             return Response({"message": "User created successfully"}, status=status.HTTP_201_CREATED)
+        print('print serializer is valid wale if ke bahar')
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class LoginView(APIView):
@@ -48,16 +47,6 @@ class LoginView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-from rest_framework.permissions import BasePermission
-
-class IsAdmin(BasePermission):
-    def has_permission(self, request, view):
-        if request.user and request.user.is_authenticated:
-            # Check if the user is a staff member (admin)
-            return request.user.is_staff
-        return False
-
-
 class VehicleView(APIView):
     permission_classes = [IsAdmin]
     def get(self, request):
@@ -74,11 +63,10 @@ class VehicleView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-
 class ProtectedView(APIView):
     permission_classes = [IsAdmin]
     def get(self, request):
-        return Response({"message" : "Welcome to the JWT ksjfdbgksdjbAPI"})
+        return Response({"message" : "Welcome to the protected view"})
 
 
 
