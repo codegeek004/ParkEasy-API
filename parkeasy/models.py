@@ -1,62 +1,38 @@
 from django.db import models
-from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
 
-class UserManager(BaseUserManager):
-	def create_user(self, email, name, tc, password=None, passwor2=None):
-		print('create user mai gaya')
-		"""
-		creates and saves the user with email, name, tc and password
-		"""
-		if not email:
-			raise ValueError("You must have an email address")
+# class User(models.Model):
+#     SNo = models.AutoField(primary_key=True)  # Unique identifier for the user
+#     username = models.CharField(max_length=255, null=True, blank=True)
+#     email = models.EmailField(unique=True, max_length=255)
+#     password = models.CharField(max_length=255, null=True, blank=True)
+#     role = models.CharField(max_length=40, default='user')
 
-		user = self.model(
-				email = self.normalize_email(email),
-				name = name,
-				tc=tc
-			)
-		print('user ke niche')
-		user.set_password(password)
-		#saves into a database instance
-		print('user.save ke upar UserManager mau')
-		user.save(using=self._db)
-		return user
+class Slots(models.Model):
+    SlotID = models.AutoField(primary_key=True)  # Unique identifier for slots
+    space = models.CharField(max_length=30, null=True, blank=True)
+    price = models.IntegerField(null=True, blank=True)
+    total_slots = models.IntegerField(default=90)
 
-	def create_superuser(self, email, name, tc, password=None, passwor2=None):
-		print('create superuser mai gaya')
-		if not email:
-			raise ValueError("You must have an email address")
-		user = self.create_user(
-				email,
-				password=password,
-				name=name,
-				tc=tc 
-			)
-		print('user ke niche')
-		user.is_admin=True 
-		print('user.is_admin', user.is_admin)
-		user.is_superuser=True 
-		user.is_staff = True
-		user.save(using=self._db)
-		return user
-	
-class User(AbstractBaseUser, PermissionsMixin):
-	email = models.EmailField(verbose_name="email", max_length=255, unique=True)
-	name = models.CharField(max_length=255, blank=True)
-	tc = models.BooleanField()
-	is_active = models.BooleanField(default=True)
-	is_admin = models.BooleanField(default=False)
-	is_staff = models.BooleanField(default=False)
-	created_at = models.DateTimeField(auto_now_add=True)
-	updated_at = models.DateTimeField(auto_now=True)
+class Vehicle(models.Model):
+    VehicleID = models.AutoField(primary_key=True)  # Unique identifier for vehicles
+    SNo = models.BigIntegerField(unique=True)  # References the user's SNo
+    VehicleType = models.CharField(max_length=40, null=True, blank=True)
+    VehicleNumber = models.CharField(max_length=40, null=True, blank=True)
+    VehicleName = models.CharField(max_length=40, null=True, blank=True)
 
-	objects = UserManager()
+class BookingSlot(models.Model):
+    BSlotID = models.AutoField(primary_key=True)  # Explicit primary key for booking slots
+    SNo = models.BigIntegerField(unique=True)  # References the user's SNo
+    SlotID = models.ForeignKey(Slots, to_field="SlotID", on_delete=models.CASCADE)  # References the slot
+    Date = models.DateField(null=True, blank=True)
+    TimeFrom = models.TimeField(null=True, blank=True)
+    TimeTo = models.TimeField(null=True, blank=True)
+    duration = models.CharField(max_length=30, null=True, blank=True)
+    VehicleID = models.ForeignKey(Vehicle, to_field="VehicleID", on_delete=models.CASCADE)  # References the vehicle
 
-	USERNAME_FIELD = "email"
-	REQUIRED_FIELDS = ["name","tc"]
-
-	def __str__(self):
-		return f"{self.email} {self.name}"
-
-
-
+class Payment(models.Model):
+    PaymentID = models.AutoField(primary_key=True)  # Unique identifier for payments
+    SNo = models.BigIntegerField(unique=True)  # References the user's SNo
+    BSlotID = models.ForeignKey(BookingSlot, to_field="BSlotID", on_delete=models.CASCADE)  # References the booking slot
+    TotalPrice = models.IntegerField(null=True, blank=True)
+    mode = models.CharField(max_length=30, null=True, blank=True)
