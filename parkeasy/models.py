@@ -1,11 +1,36 @@
 from django.db import models
+from django.contrib import admin
+from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import BaseUserManager
 
-# class User(models.Model):
-#     SNo = models.AutoField(primary_key=True)  # Unique identifier for the user
-#     username = models.CharField(max_length=255, null=True, blank=True)
-#     email = models.EmailField(unique=True, max_length=255)
-#     password = models.CharField(max_length=255, null=True, blank=True)
-#     role = models.CharField(max_length=40, default='user')
+class CustomUserManager(BaseUserManager):
+    def create_user(self, username, email, password=None, **extra_fields):
+        """Create and return a regular user with an email and password."""
+        if not email:
+            raise ValueError('The Email field must be set')
+        email = self.normalize_email(email)
+        user = self.model(username=username, email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, username, email, password=None, **extra_fields):
+        """Create and return a superuser with an email, password, and other fields."""
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_admin', True)
+
+        return self.create_user(username, email, password, **extra_fields)
+
+class CustomUser(AbstractUser):
+    ROLE_CHOICES = [
+        ('admin', 'Admin'),
+        ('user', 'User'),
+    ]
+    role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='user')
+
+    # Use CustomUserManager for creating and managing users
+    objects = CustomUserManager()
 
 class Slots(models.Model):
     SlotID = models.AutoField(primary_key=True)  # Unique identifier for slots

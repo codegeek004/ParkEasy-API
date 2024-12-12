@@ -41,7 +41,8 @@ INSTALLED_APPS = [
     #my apps
     'parkeasy',
     'rest_framework_simplejwt',
-    'rest_framework'
+    'rest_framework',
+    'rest_framework_roles', 
 ]
 
 MIDDLEWARE = [
@@ -148,3 +149,19 @@ SIMPLE_JWT = {
     "ACCESS_TOKEN_LIFETIME" : timedelta(minutes=5),
     "RERESH_TOKEN_LIFETIME" : timedelta(days=1),
 }
+
+
+REST_FRAMEWORK_ROLES = {
+    'ROLES': 'myproject.roles.ROLES',  # Replace with your actual path to roles
+    # 'SKIP_MODULES': [
+    #     'django.*',
+    #     'myproject.some_other_app.*',
+    # ],
+}
+
+ROLES = {
+    'admin': ['can_view', 'can_edit', 'can_delete'],
+    'user': ['can_view'],
+}
+
+AUTH_USER_MODEL = 'parkeasy.CustomUser' 

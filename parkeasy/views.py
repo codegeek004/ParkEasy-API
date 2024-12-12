@@ -10,12 +10,20 @@ from rest_framework.generics import ListAPIView
 from .models import *
 from django.contrib.auth.decorators import login_required  
 from django.utils.decorators import method_decorator 
+#roles
+from .permissions import IsAdmin, IsUser
+from rest_framework.permissions import AllowAny
+
+from rest_framework.permissions import BasePermission
+
 
 class HomeView(APIView):
+    permission_classes = [AllowAny]
     def get(self, request):
         return Response({"message" : "Welcome to the JWT API"})
 
 class RegisterView(APIView):
+    permission_classes = [AllowAny]
     def post(self, request):
         serializer = RegisterSerializer(data=request.data)
         if serializer.is_valid():
@@ -24,6 +32,7 @@ class RegisterView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class LoginView(APIView):
+    permission_classes = [AllowAny]
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
@@ -37,10 +46,20 @@ class LoginView(APIView):
                     })
             return Response({"error" : "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
+
+
+from rest_framework.permissions import BasePermission
+
+class IsAdmin(BasePermission):
+    def has_permission(self, request, view):
+        if request.user and request.user.is_authenticated:
+            # Check if the user is a staff member (admin)
+            return request.user.is_staff
+        return False
+
 
 class VehicleView(APIView):
-    permission_classes = [IsAuthenticated] 
+    permission_classes = [IsAdmin]
     def get(self, request):
         vehicles = Vehicle.objects.all()
         print(vehicles)
@@ -55,6 +74,11 @@ class VehicleView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
+
+class ProtectedView(APIView):
+    permission_classes = [IsAdmin]
+    def get(self, request):
+        return Response({"message" : "Welcome to the JWT ksjfdbgksdjbAPI"})
 
 
 
