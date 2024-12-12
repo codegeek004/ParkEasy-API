@@ -5,7 +5,6 @@ from django.contrib.auth.models import BaseUserManager
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, username, email, password=None, **extra_fields):
-        """Create and return a regular user with an email and password."""
         if not email:
             raise ValueError('The Email field must be set')
         email = self.normalize_email(email)
@@ -15,7 +14,6 @@ class CustomUserManager(BaseUserManager):
         return user
 
     def create_superuser(self, username, email, password=None, **extra_fields):
-        """Create and return a superuser with an email, password, and other fields."""
         extra_fields.setdefault('is_staff', True)
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('is_admin', True)
@@ -28,8 +26,6 @@ class CustomUser(AbstractUser):
         ('user', 'User'),
     ]
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='user')
-
-    # Use CustomUserManager for creating and managing users
     objects = CustomUserManager()
 
 class Slots(models.Model):
