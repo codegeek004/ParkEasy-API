@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     #my apps
     'parkeasy',
     'rest_framework_simplejwt',
+    'rest_framework'
 ]
 
 MIDDLEWARE = [
@@ -119,7 +120,7 @@ USE_I18N = True
 
 USE_TZ = True
 
-AUTH_USER_MODEL = 'parkeasy.User'
+# AUTH_USER_MODEL = 'parkeasy.User'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
@@ -136,8 +137,14 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 #Simplejwt configurations
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
-
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    )
+    ),
+    # 'DEFAULT_RENDERER_CLASSES': [
+    #     'rest_framework.renderers.JSONRenderer',  # This avoids looking for templates
+    # ],
 
+}
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME" : timedelta(minutes=5),
+    "RERESH_TOKEN_LIFETIME" : timedelta(days=1),
 }
