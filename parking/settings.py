@@ -43,6 +43,7 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'rest_framework',
     'rest_framework_roles', 
+    'preventconcurrentlogins',
 ]
 
 MIDDLEWARE = [
@@ -109,6 +110,11 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+MIDDLEWARE_CLASSES = {        
+    #...
+    'preentconcurrentlogins.middleware.PreventConcurrentLoginsMiddleware',
+    #...
+   }
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
