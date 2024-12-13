@@ -10,7 +10,12 @@ from rest_framework.generics import ListAPIView
 from .models import *
 from rest_framework.permissions import AllowAny
 from .permissions import IsAdmin
+from rest_framework_simplejwt.views import TokenRefreshView
+from rest_framework_simplejwt.exceptions import InvalidToken
+from datetime import timedelta
+from django.contrib.auth import get_user_model
 
+User = get_user_model()
 
 class HomeView(APIView):
     permission_classes = [AllowAny]
@@ -30,6 +35,43 @@ class RegisterView(APIView):
         print('print serializer is valid wale if ke bahar')
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+# class CustomTokenRefreshView(TokenRefreshView):
+#     def post(self, request, *args, **kwargs):
+#         try:
+#             data = super().post(request, *args, **kwargs).data
+#             user = self.get_user_from_token(data.get('access'))
+#             last_active = datetime.now() - timedelta(minutes=1)
+#             if user.last_login < user.last_active:
+#                 return Response({"message" : "User not active for too long"}, status=status.HTTP_403_Forbidden)
+#             return Response(data)
+#         except InvalidToken as e:
+#             return Response({"detail" : str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+class CustomTokenRefreshView(TokenRefreshView):
+    def post(self, request, *args, **kwargs):
+        try: 
+            refresh_token = request.data.get("refresh")
+            if not refresh_token:
+                return Response({"message" : "Refresh Token is required."}, status=status.HTTP_400_BAD_REQUEST)
+            
+            token = RefreshToken(refresh_token)
+            user_id = token["user_id"]
+
+            user = User.objects.get(id=user_id)
+
+            if user.last_active and datetime.now() - user.last_active > timedelta(minutes=5):
+                return Response({"message" : "User was inactive for more than 5 minutes"})
+
+            user.update_last_active()
+
+            last_active = datetime.now() - timedelta(minutes=5)
+            access_token = str(token.access_token)
+            return Response({"new access token" : access_token})
+        except Exception as e:
+            return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
 class LoginView(APIView):
     permission_classes = [AllowAny]
     def post(self, request):
@@ -48,7 +90,7 @@ class LoginView(APIView):
 
 
 class VehicleView(APIView):
-    permission_classes = [IsAdmin]
+    permission_classes = [AllowAny]
     def get(self, request):
         vehicles = Vehicle.objects.all()
         print(vehicles)
