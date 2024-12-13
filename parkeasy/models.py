@@ -4,6 +4,7 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import BaseUserManager
 from datetime import datetime
 from django.utils.timezone import now
+
 class CustomUserManager(BaseUserManager):
     def create_user(self, username, email, password=None, **extra_fields):
         if not email:
@@ -27,7 +28,7 @@ class CustomUser(AbstractUser):
         ('user', 'User'),
     ]
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='user')
-    last_active = models.DateTimeField(null=True, blank=True, default=now) 
+    last_active = models.DateTimeField(null=True, blank=True, default=datetime.now) 
     objects = CustomUserManager()
 
     def update_last_active(self):
