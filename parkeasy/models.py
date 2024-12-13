@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib import admin
 from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.models import BaseUserManager
-
+from datetime import datetime
 class CustomUserManager(BaseUserManager):
     def create_user(self, username, email, password=None, **extra_fields):
         if not email:
@@ -26,7 +26,12 @@ class CustomUser(AbstractUser):
         ('user', 'User'),
     ]
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='user')
+    last_active = models.DateTimeField(null=True, blank=True) 
     objects = CustomUserManager()
+
+    def update_last_active(self):
+        self.last_active = datetime.now()
+        self.save()
 
 class Slots(models.Model):
     SlotID = models.AutoField(primary_key=True)  # Unique identifier for slots
