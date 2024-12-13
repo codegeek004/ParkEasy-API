@@ -35,18 +35,6 @@ class RegisterView(APIView):
         print('print serializer is valid wale if ke bahar')
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-# class CustomTokenRefreshView(TokenRefreshView):
-#     def post(self, request, *args, **kwargs):
-#         try:
-#             data = super().post(request, *args, **kwargs).data
-#             user = self.get_user_from_token(data.get('access'))
-#             last_active = datetime.now() - timedelta(minutes=1)
-#             if user.last_login < user.last_active:
-#                 return Response({"message" : "User not active for too long"}, status=status.HTTP_403_Forbidden)
-#             return Response(data)
-#         except InvalidToken as e:
-#             return Response({"detail" : str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
 class CustomTokenRefreshView(TokenRefreshView):
     def post(self, request, *args, **kwargs):
         try: 
@@ -60,7 +48,7 @@ class CustomTokenRefreshView(TokenRefreshView):
             user = User.objects.get(id=user_id)
 
             # Check for inactivity (more than 5 minutes)
-            if user.last_active and now() - user.last_active > timedelta(minutes=5):
+            if user.last_active and now() - user.last_active > timedelta(minutes=1):
                 return Response({"message": "User was inactive for more than 5 minutes"}, status=status.HTTP_401_UNAUTHORIZED)
 
             # Update user's last active time
@@ -83,9 +71,16 @@ class LoginView(APIView):
             user = authenticate(username=serializer.validated_data['username'],
                                 password=serializer.validated_data['password'])
             if user is not None:
-                user.last_active = now()
-                user.save()
                 refresh = RefreshToken.for_user(user)
+                user.last_active = now()
+                user.latest_token = refresh.access_token['jti']
+                user.is_logged_in = True
+                user.save()
+
+                if user.is_logged_in:
+                    return Response({"message" : "user is already logged in."}, status=status.HTTP_403_FORBIDDEN)
+
+                
                 return Response({
                         'access' : str(refresh.access_token),
                         'refresh' : str(refresh)

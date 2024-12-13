@@ -29,6 +29,7 @@ class CustomUser(AbstractUser):
     ]
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='user')
     last_active = models.DateTimeField(null=True, blank=True, default=datetime.now) 
+    is_logged_in = models.BooleanField(default=False)
     objects = CustomUserManager()
 
     def update_last_active(self):
