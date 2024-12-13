@@ -19,7 +19,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         print('role', role)
         if role not in ['admin', 'user']:
             raise serializers.ValidationError({"role": "Invalid role. Choose either 'admin' or 'user'."})
-            
+
         user = CustomUser.objects.create_user(
             username=validated_data['username'],
             password=validated_data['password'],
