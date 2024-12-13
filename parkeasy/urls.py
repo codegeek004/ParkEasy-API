@@ -8,5 +8,6 @@ urlpatterns = [
     path('', HomeView.as_view(), name="home"),
     path('vehicles/', VehicleView.as_view(), name='vehicles'),
     path('protected', ProtectedView.as_view(), name="home"),
+    path('api/token/refresh/', CustomTokenRefreshView.as_view(), name='token_refresh')
    
 ]
