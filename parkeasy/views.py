@@ -47,7 +47,6 @@ class RegisterView(APIView):
 #         except InvalidToken as e:
 #             return Response({"detail" : str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
-
 class CustomTokenRefreshView(TokenRefreshView):
     def post(self, request, *args, **kwargs):
         try: 
@@ -66,6 +65,7 @@ class CustomTokenRefreshView(TokenRefreshView):
 
             # Update user's last active time
             user.last_active = now()
+            print('user.last_Active' ,user.last_active)
             user.save()
 
             # Generate new access token
@@ -83,6 +83,8 @@ class LoginView(APIView):
             user = authenticate(username=serializer.validated_data['username'],
                                 password=serializer.validated_data['password'])
             if user is not None:
+                user.last_active = now()
+                user.save()
                 refresh = RefreshToken.for_user(user)
                 return Response({
                         'access' : str(refresh.access_token),
