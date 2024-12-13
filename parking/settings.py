@@ -115,6 +115,8 @@ AUTH_PASSWORD_VALIDATORS = [
 MIDDLEWARE_CLASSES = {        
     #...
     'preventconcurrentlogins.middleware.PreventConcurrentLoginsMiddleware',
+
+    'parkeasy.middlewares.CheckLastActiveMiddleware',
     #...
    }
 
