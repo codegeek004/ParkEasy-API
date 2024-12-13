@@ -74,11 +74,8 @@ class LoginView(APIView):
                 refresh = RefreshToken.for_user(user)
                 user.last_active = now()
                 user.latest_token = refresh.access_token['jti']
-                user.is_logged_in = True
                 user.save()
 
-                if user.is_logged_in:
-                    return Response({"message" : "user is already logged in."}, status=status.HTTP_403_FORBIDDEN)
 
                 
                 return Response({
@@ -87,6 +84,24 @@ class LoginView(APIView):
                     })
             return Response({"error" : "Invalid credentials"}, status=status.HTTP_401_UNAUTHORIZED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class LogoutView(APIView):
+    permission_classes = [IsAuthenticated]
+    def post(self, request):
+        try:
+            user = request.user
+
+            # Invalidate the active token
+            active_token = ActiveToken.objects.get(user=user)
+            token = RefreshToken(active_token.refresh_token)
+            token.blacklist()  # Blacklist the token
+            active_token.delete()  # Remove from the database
+
+            return Response({"message": "Successfully logged out."}, status=status.HTTP_200_OK)
+
+        except ActiveToken.DoesNotExist:
+            return Response({"error": "No active session found."}, status=status.HTTP_400_BAD_REQUEST)
 
 
 class VehicleView(APIView):
