@@ -11,12 +11,15 @@ class RegisterSerializer(serializers.ModelSerializer):
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
-        role = validated_data.get('role', 'user')  # Default role is 'user'
+        #validated_data is the data we insert from the post method
+        #checks the role in the validated_data dictionary of the serializer. 
+        #If the role does not exist it will be user by default
+        print('validated_Data: ', validated_data)
+        role = validated_data.get('role', 'user')
         print('role', role)
         if role not in ['admin', 'user']:
             raise serializers.ValidationError({"role": "Invalid role. Choose either 'admin' or 'user'."})
-
-
+            
         user = CustomUser.objects.create_user(
             username=validated_data['username'],
             password=validated_data['password'],
