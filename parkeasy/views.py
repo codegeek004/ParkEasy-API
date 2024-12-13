@@ -47,29 +47,32 @@ class RegisterView(APIView):
 #         except InvalidToken as e:
 #             return Response({"detail" : str(e)}, status=status.HTTP_400_BAD_REQUEST)
 
+
 class CustomTokenRefreshView(TokenRefreshView):
     def post(self, request, *args, **kwargs):
         try: 
             refresh_token = request.data.get("refresh")
             if not refresh_token:
-                return Response({"message" : "Refresh Token is required."}, status=status.HTTP_400_BAD_REQUEST)
+                return Response({"message": "Refresh Token is required."}, status=status.HTTP_400_BAD_REQUEST)
             
             token = RefreshToken(refresh_token)
             user_id = token["user_id"]
 
             user = User.objects.get(id=user_id)
 
-            if user.last_active and datetime.now() - user.last_active > timedelta(minutes=5):
-                return Response({"message" : "User was inactive for more than 5 minutes"})
+            # Check for inactivity (more than 5 minutes)
+            if user.last_active and now() - user.last_active > timedelta(minutes=5):
+                return Response({"message": "User was inactive for more than 5 minutes"}, status=status.HTTP_401_UNAUTHORIZED)
 
-            user.update_last_active()
+            # Update user's last active time
+            user.last_active = now()
+            user.save()
 
-            last_active = datetime.now() - timedelta(minutes=5)
+            # Generate new access token
             access_token = str(token.access_token)
-            return Response({"new access token" : access_token})
+            return Response({"new access token": access_token})
         except Exception as e:
             return Response({"message": str(e)}, status=status.HTTP_400_BAD_REQUEST)
-
 
 
 class LoginView(APIView):
@@ -90,7 +93,7 @@ class LoginView(APIView):
 
 
 class VehicleView(APIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     def get(self, request):
         vehicles = Vehicle.objects.all()
         print(vehicles)
