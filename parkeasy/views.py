@@ -18,6 +18,7 @@ from django.contrib.auth import get_user_model
 #mixins
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, CreateModelMixin, UpdateModelMixin, DestroyModelMixin
 from rest_framework.generics import GenericAPIView
+from django.shortcuts import get_object_or_404
 
 User = get_user_model()
 
@@ -132,13 +133,10 @@ class SlotView(ListModelMixin, RetrieveModelMixin, CreateModelMixin, UpdateModel
     
     #Helper function to retrieve an object by id or return 404 code.
     def get_object_or_404(self, SlotID):
-        try:
-            return Slots.objects.get(id=SlotID)
-        except Slots.DoesNotExist:
-            raise Response({"message" : f"slot {SlotID} not found"}, status=status.HTTP_404_NOT_FOUND)
+        return get_object_or_404(Slots, SlotID=SlotID)
 
     def list(self, request, *args, **kwargs):
-        return self.list(request, *args, **kwargs)
+        return super().list(request, *args, **kwargs)
 
     def retrieve(self, request, *args, **kwargs):
         SlotID = kwargs.get('pk')
@@ -147,7 +145,7 @@ class SlotView(ListModelMixin, RetrieveModelMixin, CreateModelMixin, UpdateModel
         return Response(serializer.data)
 
     def post(self, request, *args, **kwargs):
-        return self.create(request, *args, **kwargs)
+        return super().create(request, *args, **kwargs)
 
     def put(self, request, *args, **kwargs):
         SlotID = kwargs.get('pk')
