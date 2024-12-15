@@ -1,26 +1,32 @@
-from datetime import timedelta
-from django.http import JsonResponse
-from django.utils.timezone import now, make_aware, is_naive
-
-class CheckLastActiveMiddleware:
+from django.utils.timezone import now
+from rest_framework_simplejwt.tokens import RefreshToken
+from .models import ActiveToken
+class PreventConcurrentLoginMiddleware:
+    
     def __init__(self, get_response):
         self.get_response = get_response
 
     def __call__(self, request):
-        if request.user.is_authenticated:
-            last_active = request.user.last_active
+        user = request.user
+        if user.is_authenticated:
+            try:
+                active_token = ActiveToken.objects.get(user=request.user)
+                old_token = RefreshToken(active_token.refresh_token)
+                print('active_token', active_token)
+                print('old token', old_token)
+                old_token.blacklist()
+                active_token.delete()
+            except ActiveToken.DoesNotExist:
+                pass
 
-            # Make `last_active` timezone-aware if needed
-            if last_active and is_naive(last_active):
-                last_active = make_aware(last_active)
-
-            # Check for inactivity (more than 1 minute)
-            if last_active and now() - last_active > timedelta(minutes=1):
-                return JsonResponse({"message": "You are inactive. Please log in again."}, status=401)
-
-            # Update `last_active` to the current time
+            refresh = RefreshToken.for_user(request.user)
             request.user.last_active = now()
+            request.user.latest_token = refresh.access_token['jti']
             request.user.save()
 
+            ActiveToken.objects.create(
+                    user = request.user,
+                    refresh_token=str(refresh),
+                )
         response = self.get_response(request)
         return response
