@@ -8,6 +8,8 @@ urlpatterns = [
     path('', HomeView.as_view(), name="home"),
     path('vehicles/', VehicleView.as_view(), name='vehicles'),
     path('protected', ProtectedView.as_view(), name="home"),
-    path('api/token/refresh/', CustomTokenRefreshView.as_view(), name='token_refresh')
+    path('api/token/refresh/', CustomTokenRefreshView.as_view(), name='token_refresh'),
+    path('slots/', SlotView.as_view(), name="slots-list-create"),
+    path('slots/<int:pk>/', SlotView.as_view(), name="slots-operation-id")
    
 ]
