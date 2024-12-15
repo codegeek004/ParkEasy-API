@@ -1,9 +1,12 @@
 from django.db import models
 from django.contrib import admin
-from django.contrib.auth.models import AbstractUser
+from django.contrib.auth.models import AbstractUser, PermissionsMixin
 from django.contrib.auth.models import BaseUserManager
 from datetime import datetime
 from django.utils.timezone import now
+#this will create a circular import and error will be customuser not installed
+# from django.contrib.auth import get_user_model  
+# User = get_user_model()
 
 class CustomUserManager(BaseUserManager):
     def create_user(self, username, email, password=None, **extra_fields):
@@ -22,18 +25,30 @@ class CustomUserManager(BaseUserManager):
 
         return self.create_user(username, email, password, **extra_fields)
 
-class CustomUser(AbstractUser):
+class CustomUser(AbstractUser, PermissionsMixin):
     ROLE_CHOICES = [
         ('admin', 'Admin'),
         ('user', 'User'),
     ]
     role = models.CharField(max_length=10, choices=ROLE_CHOICES, default='user')
-    last_active = models.DateTimeField(null=True, blank=True, default=datetime.now) 
+    last_active = models.DateTimeField(null=True, blank=True, default=now) 
+    latest_token = models.CharField(max_length=255, null=True, blank=True)
     objects = CustomUserManager()
 
     def update_last_active(self):
         self.last_active = datetime.now()
         self.save()
+
+    def __str__(self):
+        return self.username
+
+
+class ActiveToken(models.Model):
+    user = models.ForeignKey('parkeasy.CustomUser', on_delete=models.CASCADE)
+    refresh_token = models.CharField(max_length=255)
+
+    def __str__(self):
+        return f"Active Token : {self.user.username}"
 
 class Slots(models.Model):
     SlotID = models.AutoField(primary_key=True)  # Unique identifier for slots
