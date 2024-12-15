@@ -48,12 +48,12 @@ class CustomTokenRefreshView(TokenRefreshView):
             user = User.objects.get(id=user_id)
 
             # Check for inactivity (more than 5 minutes)
-            if user.last_active and now() - user.last_active > timedelta(minutes=1):
+            if user.last_active and now() - user.last_active > timedelta(minutes=5):
                 return Response({"message": "User was inactive for more than 5 minutes"}, status=status.HTTP_401_UNAUTHORIZED)
 
             # Update user's last active time
             user.last_active = now()
-            print('user.last_Active' ,user.last_active)
+            print('user.last_Active', user.last_active)
             user.save()
 
             # Generate new access token
@@ -75,9 +75,7 @@ class LoginView(APIView):
                 user.last_active = now()
                 user.latest_token = refresh.access_token['jti']
                 user.save()
-
-
-                
+                                
                 return Response({
                         'access' : str(refresh.access_token),
                         'refresh' : str(refresh)
