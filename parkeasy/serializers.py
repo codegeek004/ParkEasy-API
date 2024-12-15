@@ -38,3 +38,10 @@ class VehicleSerializer(serializers.ModelSerializer):
     class Meta:
         model = Vehicle
         fields = "__all__"
+
+class SlotSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Slots 
+        # fields = ['space', 'price', 'total_slots']
+        fields = "__all__"
+
