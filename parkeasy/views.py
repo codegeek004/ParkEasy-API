@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAuthenticated
 from django.http import HttpResponse
-from parkeasy.serializers import RegisterSerializer, LoginSerializer, VehicleSerializer
+from parkeasy.serializers import *
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.generics import ListAPIView
 from .models import *
@@ -14,6 +14,10 @@ from rest_framework_simplejwt.views import TokenRefreshView
 from rest_framework_simplejwt.exceptions import InvalidToken
 from datetime import timedelta
 from django.contrib.auth import get_user_model
+
+#mixins
+from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, CreateModelMixin, UpdateModelMixin, DestroyModelMixin
+from rest_framework.generics import GenericAPIView
 
 User = get_user_model()
 
@@ -75,7 +79,7 @@ class LoginView(APIView):
                 user.last_active = now()
                 user.latest_token = refresh.access_token['jti']
                 user.save()
-                                
+
                 return Response({
                         'access' : str(refresh.access_token),
                         'refresh' : str(refresh)
@@ -101,6 +105,10 @@ class LogoutView(APIView):
         except ActiveToken.DoesNotExist:
             return Response({"error": "No active session found."}, status=status.HTTP_400_BAD_REQUEST)
 
+class ProtectedView(APIView):
+    permission_classes = [IsAdmin]
+    def get(self, request):
+        return Response({"message" : "Welcome to the protected view"})
 
 class VehicleView(APIView):
     permission_classes = [IsAuthenticated]
@@ -117,11 +125,65 @@ class VehicleView(APIView):
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class SlotView(ListModelMixin, RetrieveModelMixin, CreateModelMixin, UpdateModelMixin, DestroyModelMixin, GenericAPIView):
+    permission_classes = [AllowAny]
+    queryset = Slots.objects.all()
+    serializer_class = SlotSerializer
+    
+    #Helper function to retrieve an object by id or return 404 code.
+    def get_object_or_404(self, SlotID):
+        try:
+            return Slots.objects.get(id=SlotID)
+        except Slots.DoesNotExist:
+            raise Response({"message" : f"slot {SlotID} not found"}, status=status.HTTP_404_NOT_FOUND)
 
-class ProtectedView(APIView):
-    permission_classes = [IsAdmin]
-    def get(self, request):
-        return Response({"message" : "Welcome to the protected view"})
+    def list(self, request, *args, **kwargs):
+        return self.list(request, *args, **kwargs)
+
+    def retrieve(self, request, *args, **kwargs):
+        SlotID = kwargs.get('pk')
+        slot = self.get_object_or_404(SlotID)
+        serializer = self.get_serializer(slot)
+        return Response(serializer.data)
+
+    def post(self, request, *args, **kwargs):
+        return self.create(request, *args, **kwargs)
+
+    def put(self, request, *args, **kwargs):
+        SlotID = kwargs.get('pk')
+        if SlotID:
+            slot = self.get_object_or_404(SlotID)
+            serializer = self.get_serializer(slot, data=request.data)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.data)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"message" : "SlotID is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+    def patch(self, request, *args, **kwargs):
+        SlotID = kwargs.get('pk')
+        if SlotID:
+            slot = self.get_object_or_404(SlotID)
+            serializer = self.get_object_or_404(slot, data=request.data, parital=True)
+            if serializer.is_valid():
+                serializer.save()
+                return Response(serializer.save)
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({"message" : "SlotID is required"}, status=status.HTTP_400_BAD_REQUEST)
+
+    def delete(self, request, *args, **kwargs):
+        SlotID = kwargs.get('pk')
+        if SlotID:
+            slot = self.get_object_or_404(SlotID)
+            slot.delete()
+            return Response({"message" : "Slot {SlotID} deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+        return Response({"message" : "SlotID is required for deleting."}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
+
+
+
 
 
 
