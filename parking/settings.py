@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
-#for authorization header
+
 
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -31,6 +31,7 @@ DEBUG = True
 ALLOWED_HOSTS = []
 
 
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -45,10 +46,9 @@ INSTALLED_APPS = [
     'rest_framework_simplejwt',
     'rest_framework',
     'rest_framework_roles', 
-    'preventconcurrentlogins',
     'rest_framework_simplejwt.token_blacklist',
 ]
-
+    
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
@@ -57,6 +57,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'parkeasy.middleware.PreventConcurrentLoginMiddleware',
 ]
 
 ROOT_URLCONF = 'parking.urls'
@@ -113,13 +114,7 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-MIDDLEWARE_CLASSES = {        
-    #...
-    'preventconcurrentlogins.middleware.PreventConcurrentLoginsMiddleware',
 
-    'parkeasy.middlewares.CheckLastActiveMiddleware',
-    #...
-   }
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
@@ -132,7 +127,6 @@ USE_I18N = True
 
 USE_TZ = True
 
-# AUTH_USER_MODEL = 'parkeasy.User'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
@@ -144,7 +138,7 @@ STATIC_URL = 'static/'
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
-
+# AUTH_USER_MODEL = 'parkeasy.CustomUser'
 
 #Simplejwt configurations
 REST_FRAMEWORK = {
@@ -157,7 +151,7 @@ REST_FRAMEWORK = {
 
 }
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME" : timedelta(minutes=1),
+    "ACCESS_TOKEN_LIFETIME" : timedelta(minutes=5),
     "RERESH_TOKEN_LIFETIME" : timedelta(days=1),
     "ROTATE_REFRESH_TOKENS": True,  
     "BLACKLIST_AFTER_ROTATION": True,   
@@ -177,5 +171,4 @@ ROLES = {
     'admin': ['can_view', 'can_edit', 'can_delete'],
     'user': ['can_view'],
 }
-
-AUTH_USER_MODEL = 'parkeasy.CustomUser' 
+AUTH_USER_MODEL = "parkeasy.CustomUser"
