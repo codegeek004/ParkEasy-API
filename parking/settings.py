@@ -13,7 +13,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 from pathlib import Path
 from datetime import timedelta
 
-
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -30,8 +30,6 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
-
-
 # Application definition
 
 INSTALLED_APPS = [
@@ -47,6 +45,12 @@ INSTALLED_APPS = [
     'rest_framework',
     'rest_framework_roles', 
     'rest_framework_simplejwt.token_blacklist',
+    #all auth
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.github',
+    'allauth.socialaccount.providers.google',
 ]
     
 MIDDLEWARE = [
@@ -57,6 +61,9 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    # allauth   
+    "allauth.account.middleware.AccountMiddleware",
+    #my middlewares
     'parkeasy.middleware.PreventConcurrentLoginMiddleware',
 ]
 
@@ -95,6 +102,21 @@ DATABASES = {
     }
 }
 
+SOCIALACCOUNT_PROVIDERS = {
+    'google': {
+        # For each OAuth based provider, either add a ``SocialApp``
+        # (``socialaccount`` app) containing the required client
+        # credentials, or list them here:
+        'APP': {
+            'client_id': '99034799467-dp6l6hk2vff01ah2hq01bvvv3ui3pprg.apps.googleusercontent.com',
+            'secret': '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',
+            # 'key': ''
+        }
+    }
+}
+
+
+
 
 # Password validation
 # https://docs.djangoproject.com/en/5.1/ref/settings/#auth-password-validators
@@ -114,6 +136,17 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+
+
+AUTHENTICATION_BACKENDS = [
+
+    # Needed to login by username in Django admin, regardless of `allauth`
+    'django.contrib.auth.backends.ModelBackend',
+
+    # `allauth` specific authentication methods, such as login by email
+    'allauth.account.auth_backends.AuthenticationBackend',
+
+]
 
 
 # Internationalization
@@ -161,10 +194,10 @@ SIMPLE_JWT = {
 
 REST_FRAMEWORK_ROLES = {
     'ROLES': 'myproject.roles.ROLES',  # Replace with your actual path to roles
-    # 'SKIP_MODULES': [
-    #     'django.*',
-    #     'myproject.some_other_app.*',
-    # ],
+    'SKIP_MODULES': [
+        'django.*',
+        'allauth.*',
+    ],
 }
 
 ROLES = {
