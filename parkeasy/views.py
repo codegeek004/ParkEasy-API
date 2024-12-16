@@ -131,7 +131,6 @@ class SlotView(ListModelMixin, RetrieveModelMixin, CreateModelMixin, UpdateModel
     queryset = Slots.objects.all()
     serializer_class = SlotSerializer
     
-    #Helper function to retrieve an object by id or return 404 code.
     def get_object_or_404(self, pk):
         try:
             return Slots.objects.get(SlotID=pk)
@@ -162,13 +161,14 @@ class SlotView(ListModelMixin, RetrieveModelMixin, CreateModelMixin, UpdateModel
         return Response({"message" : "SlotID is required"}, status=status.HTTP_400_BAD_REQUEST)
 
     def patch(self, request, *args, **kwargs):
+        print('patch mai gaya')
         SlotID = kwargs.get('pk')
         if SlotID:
             slot = self.get_object_or_404(SlotID)
-            serializer = self.get_object_or_404(slot, data=request.data, parital=True)
+            serializer = self.get_serializer(slot, data=request.data, partial=True)
             if serializer.is_valid():
                 serializer.save()
-                return Response(serializer.save)
+                return Response(serializer.data)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response({"message" : "SlotID is required"}, status=status.HTTP_400_BAD_REQUEST)
 
