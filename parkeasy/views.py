@@ -132,17 +132,20 @@ class SlotView(ListModelMixin, RetrieveModelMixin, CreateModelMixin, UpdateModel
     serializer_class = SlotSerializer
     
     #Helper function to retrieve an object by id or return 404 code.
-    def get_object_or_404(self, SlotID):
-        return get_object_or_404(Slots, SlotID=SlotID)
+    def get_object_or_404(self, pk):
+        try:
+            return Slots.objects.get(SlotID=pk)
+        except Slots.DoesNotExist:
+            raise Response({"message": f"Slot {pk} not found"}, status=status.HTTP_404_NOT_FOUND)
 
-    def list(self, request, *args, **kwargs):
-        return super().list(request, *args, **kwargs)
-
-    def retrieve(self, request, *args, **kwargs):
-        SlotID = kwargs.get('pk')
-        slot = self.get_object_or_404(SlotID)
-        serializer = self.get_serializer(slot)
-        return Response(serializer.data)
+    def get(self, request, *args, **kwargs):
+        pk = kwargs.get('pk')
+        if pk:
+            slot = self.get_object_or_404(pk)
+            serializer = self.get_serializer(slot)
+            return Response(serializer.data)
+        else:
+            return self.list(request, *args, **kwargs)
 
     def post(self, request, *args, **kwargs):
         return super().create(request, *args, **kwargs)
@@ -171,8 +174,10 @@ class SlotView(ListModelMixin, RetrieveModelMixin, CreateModelMixin, UpdateModel
 
     def delete(self, request, *args, **kwargs):
         SlotID = kwargs.get('pk')
+        print('SlotID', SlotID)
         if SlotID:
             slot = self.get_object_or_404(SlotID)
+            print('slot', slot)
             slot.delete()
             return Response({"message" : "Slot {SlotID} deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
         return Response({"message" : "SlotID is required for deleting."}, status=status.HTTP_400_BAD_REQUEST)
