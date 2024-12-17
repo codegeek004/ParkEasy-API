@@ -1,4 +1,4 @@
-from django.urls import path
+from django.urls import path, re_path
 from parkeasy.views import *
 
 urlpatterns = [
@@ -11,4 +11,7 @@ urlpatterns = [
     path('api/token/refresh/', CustomTokenRefreshView.as_view(), name='token_refresh'),
     path('slots/', SlotView.as_view(), name="slots-list-create"),
     path('slots/<int:pk>/', SlotView.as_view(), name="slots-operation-id"),
+    #Multi-Factor authentication
+    re_path(r'totp/create/$', TOTPCreateView.as_view(), name="totp-create"),
+    re_path(r'^totp/login/(?P<token>[0-9]{6})/$', TOTPVerifyView.as_view(), name="totp-login")
     ]

@@ -20,6 +20,11 @@ from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, CreateMode
 from rest_framework.generics import GenericAPIView
 from django.shortcuts import get_object_or_404
 
+#multi-factor authentication
+from rest_framework import views, permissions
+from django_otp import devices_for_user
+from django_otp.plugins.otp_totp.models import TOTPDevice
+
 User = get_user_model()
 
 class HomeView(APIView):
@@ -53,7 +58,7 @@ class CustomTokenRefreshView(TokenRefreshView):
             user = User.objects.get(id=user_id)
 
             # Check for inactivity (more than 5 minutes)
-            if user.last_active and now() - user.last_active > timedelta(minutes=5):
+            if user.last_active and now() - user.last_active > timedelta(minutes=10):
                 return Response({"message": "User was inactive for more than 5 minutes"}, status=status.HTTP_401_UNAUTHORIZED)
 
             # Update user's last active time
@@ -125,6 +130,68 @@ class VehicleView(APIView):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+############################ Multi-Factor Authentication ##########################
+def get_user_totp_device(user, confirmed=None):
+    print('get totp device mai gaya')
+    devices = devices_for_user(user, confirmed=confirmed)  # devices is a generator
+    for device in devices:  # Iterate through the generator
+        print('for device mai gaya')
+        if isinstance(device, TOTPDevice):
+            print('device:', device)
+            return device
+    return None  # Return None if no TOTPDevice exists
+
+class TOTPCreateView(views.APIView):
+    print('TOTPCreateView mai gaya')
+    #endpoint to setup a new TOTP device
+    permission_classes = [IsAuthenticated]
+
+
+
+class TOTPCreateView(views.APIView):
+    print('TOTPCreateView mai gaya')
+    # Endpoint to setup a new TOTP device
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, format=None):
+        print('TOTPcreate ki get mai gaya')
+        user = request.user
+        print('user:', user)
+
+        # Get existing TOTP device for the user
+        device = get_user_totp_device(user, confirmed=False)
+        print('Existing device:', device)
+
+        # If no device exists, create a new one
+        if not device:
+            print('Creating a new TOTP device...')
+            device = user.totpdevice_set.create(confirmed=False)
+            print('New device created:', device)
+
+        # Retrieve the configuration URL
+        url = device.config_url
+        print('Device Config URL:', url)
+        return Response(url, status=status.HTTP_201_CREATED)
+
+
+class TOTPVerifyView(views.APIView):
+    #endpoint to verify or enable a TOTP device
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, token, format=None):
+        user = request.user
+        device = devices_for_user(user)
+        if not device == None and device.verify_token(token):
+            if not device.confirmed:
+                device.confirmed = True
+                device.save()
+            return Response(True, status=status.HTTP_200_OK)
+        return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+
+####################DFA end########################
 
 class SlotView(ListModelMixin, RetrieveModelMixin, CreateModelMixin, UpdateModelMixin, DestroyModelMixin, GenericAPIView):
     permission_classes = [AllowAny]
