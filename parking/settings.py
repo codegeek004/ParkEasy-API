@@ -51,6 +51,9 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.github',
     'allauth.socialaccount.providers.google',
+    #multi-factor authentication
+    'django_otp',
+    'django_otp.plugins.otp_totp'
 ]
     
 MIDDLEWARE = [
@@ -184,7 +187,7 @@ REST_FRAMEWORK = {
 
 }
 SIMPLE_JWT = {
-    "ACCESS_TOKEN_LIFETIME" : timedelta(minutes=5),
+    "ACCESS_TOKEN_LIFETIME" : timedelta(minutes=10),
     "RERESH_TOKEN_LIFETIME" : timedelta(days=1),
     "ROTATE_REFRESH_TOKENS": True,  
     "BLACKLIST_AFTER_ROTATION": True,   
@@ -197,6 +200,8 @@ REST_FRAMEWORK_ROLES = {
     'SKIP_MODULES': [
         'django.*',
         'allauth.*',
+        'django_otp.*',
+
     ],
 }
 
