@@ -113,8 +113,14 @@ class LogoutView(APIView):
 
 class ProtectedView(APIView):
     permission_classes = [IsAdmin]
-    def get(self, request):
-        return Response({"message" : "Welcome to the protected view"})
+    def post(self, request):
+        token = request.data.get('token')
+        user = request.user   
+        devices = list(devices_for_user(user))
+        device = devices[0] if devices else None
+        if device and device.verify_token(token):
+            return Response({"detail" : "access granted"}, status=status.HTTP_200_OK)
+        return Response({"message" : "TOTP is incorrect"}, status=status.HTTP_400_BAD_REQUEST)
 
 class VehicleView(APIView):
     permission_classes = [IsAuthenticated]
@@ -142,54 +148,61 @@ def get_user_totp_device(user, confirmed=None):
             return device
     return None  # Return None if no TOTPDevice exists
 
-class TOTPCreateView(views.APIView):
-    print('TOTPCreateView mai gaya')
-    #endpoint to setup a new TOTP device
-    permission_classes = [IsAuthenticated]
-
-
 
 class TOTPCreateView(views.APIView):
-    print('TOTPCreateView mai gaya')
-    # Endpoint to setup a new TOTP device
     permission_classes = [IsAuthenticated]
 
     def get(self, request, format=None):
-        print('TOTPcreate ki get mai gaya')
         user = request.user
-        print('user:', user)
-
-        # Get existing TOTP device for the user
-        device = get_user_totp_device(user, confirmed=False)
+        device = TOTPDevice.objects.filter(user=user, confirmed=False).first()
         print('Existing device:', device)
 
         # If no device exists, create a new one
         if not device:
-            print('Creating a new TOTP device...')
             device = user.totpdevice_set.create(confirmed=False)
-            print('New device created:', device)
 
         # Retrieve the configuration URL
         url = device.config_url
         print('Device Config URL:', url)
-        return Response(url, status=status.HTTP_201_CREATED)
+        return Response({"qr_url" : url}, status=status.HTTP_201_CREATED)
 
 
 class TOTPVerifyView(views.APIView):
     #endpoint to verify or enable a TOTP device
     permission_classes = [IsAuthenticated]
 
-    def post(self, request, token, format=None):
+    def post(self, request, format=None):
+        token = request.data.get('token')
         user = request.user
-        device = devices_for_user(user)
-        if not device == None and device.verify_token(token):
-            if not device.confirmed:
-                device.confirmed = True
-                device.save()
-            return Response(True, status=status.HTTP_200_OK)
-        return Response(status=status.HTTP_400_BAD_REQUEST)
+        device = TOTPDevice.objects.filter(user=user, confirmed=False).first()
+        if not device:
+            return Response({"message" : "No TOTP device found"}, status=status.HTTP_400_BAD_REQUEST)
 
+        if device.verify_token(token):
+            device.confirmed = True
+            device.save()
+            return Response({"message" : "TOTP verifid"}, status=status.HTTP_200_OK)
+        return Response({"message" :"Invalid or expired oken"}, status=status.HTTP_400_BAD_REQUEST)
 
+class LoginWith2FAView(APIView):
+    def post(self, request, format=None):
+        username = request.data.get('username')
+        password = request.data.get('password')
+        token = request.data.get('token')
+
+        user = authenticate(username=username, password=password)
+        if user:
+            device = TOTPDevice.objects.filter(user=user, confirmed=False).first()
+
+            if device and device.confirmed:
+                if not device.verify_token(token):
+                    return Response({"error" : "Invalid TOTP code"}, status=status.HTTP_400_BAD_REQUEST)
+            refresh = RefreshToken.for_user(user)
+            return Response({
+                    "refresh" : str(refresh),
+                    "access" : str(refresh.access_token)
+                }, status=status.HTTP_200_OK)
+        return Response({"message" : "Invalid username or password"}, status=status.HTTP_400_BAD_REQUEST)
 
 ####################DFA end########################
 
