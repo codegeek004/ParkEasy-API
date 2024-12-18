@@ -25,6 +25,11 @@ from rest_framework import views, permissions
 from django_otp import devices_for_user
 from django_otp.plugins.otp_totp.models import TOTPDevice
 
+#allauth
+from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
+
+
+
 User = get_user_model()
 
 class HomeView(APIView):
@@ -46,6 +51,7 @@ class RegisterView(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class CustomTokenRefreshView(TokenRefreshView):
+    print('custome refresh view mai gaya')
     def post(self, request, *args, **kwargs):
         try: 
             refresh_token = request.data.get("refresh")
@@ -74,6 +80,7 @@ class CustomTokenRefreshView(TokenRefreshView):
 
 
 class LoginView(APIView):
+    print('login view mai gaya')
     permission_classes = [AllowAny]
     def post(self, request):
         serializer = LoginSerializer(data=request.data)
@@ -206,6 +213,31 @@ class LoginWith2FAView(APIView):
 
 ####################DFA end########################
 
+
+######################AllAuth###########################
+
+class CustomGoogleAccountAdapter(DefaultSocialAccountAdapter):
+    
+    def pre_google_login(self, request, socialaccount):
+
+        user = socialaccount.user  
+        refresh = RefreshToken.for_user(user)
+        access_token = str(refresh.access_token)
+        refresh_token = str(refresh)
+
+        response_data = {
+            "access_token" : access_token,
+            "refresh_token" : refresh_token
+        }
+
+        print(f"access_token: {access_token}")
+        print(f"refrehs_token: {refresh_token}")
+
+        return Response(response_data)
+
+####################Allauth end##########################
+
+
 class SlotView(ListModelMixin, RetrieveModelMixin, CreateModelMixin, UpdateModelMixin, DestroyModelMixin, GenericAPIView):
     permission_classes = [AllowAny]
     queryset = Slots.objects.all()
@@ -264,6 +296,19 @@ class SlotView(ListModelMixin, RetrieveModelMixin, CreateModelMixin, UpdateModel
 
 
 
+###frontend view######
+from django.shortcuts import render
+import requests
+
+class slot_api:
+    slot_endpoint = 'http://127.0.0.1:8000/slots/'
+    def get_data(request):
+        try:
+            response = requests.get(slot_endpoint)
+            data = response.json()
+        except Exception as e:
+            pass
+        return render(request, 'slots.html', {'api_data' : data})
 
 
 

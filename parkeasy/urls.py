@@ -1,5 +1,7 @@
-from django.urls import path, re_path
+from django.urls import path, re_path, include
 from parkeasy.views import *
+from allauth.socialaccount.urls import urlpatterns as social_urls
+
 
 urlpatterns = [
 
@@ -15,5 +17,6 @@ urlpatterns = [
     path('api/totp/create/', TOTPCreateView.as_view(), name='totp-create'),
     path('api/totp/verify/', TOTPVerifyView.as_view(), name='totp-verify'),
     path('api/login/', LoginWith2FAView.as_view(), name='login-with-2fa'),
-    # path('api/sensitive/', SensitiveView.as_view(), name='sensitive-api'),
+    #allauth
+    
     ]

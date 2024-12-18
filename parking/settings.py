@@ -51,6 +51,8 @@ INSTALLED_APPS = [
     'allauth.socialaccount',
     'allauth.socialaccount.providers.github',
     'allauth.socialaccount.providers.google',
+    'rest_framework.authtoken',
+    'dj_rest_auth',
     #multi-factor authentication
     'django_otp',
     'django_otp.plugins.otp_totp'
@@ -105,19 +107,31 @@ DATABASES = {
     }
 }
 
+# SOCIALACCOUNT_PROVIDERS = {
+#     'google': {
+#         'SCOPE': ['profile', 'email'],
+#         'AUTH_PARAMS': {'access_type': 'online'},
+#         'APP': {
+#             'client_id': '99034799467-hl9dbl4t4l64gftesd8bokb1no6kbgu3.apps.googleusercontent.com',
+#             'secret': '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',
+#             'key': '',
+# #         }
+#     }
+# }
+SOCIALACCOUNT_ADAPTER = 'parkeasy.adapters.CustomGoogleAccountAdapter'
+
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
-        # For each OAuth based provider, either add a ``SocialApp``
-        # (``socialaccount`` app) containing the required client
-        # credentials, or list them here:
+        'SCOPE': ['profile', 'email'],
+        'AUTH_PARAMS': {'access_type': 'online'},
+        'OAUTH_PKCE_ENABLED': True,
         'APP': {
-            'client_id': '99034799467-dp6l6hk2vff01ah2hq01bvvv3ui3pprg.apps.googleusercontent.com',
+            'client_id': '99034799467-hl9dbl4t4l64gftesd8bokb1no6kbgu3.apps.googleusercontent.com',
             'secret': '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',
-            # 'key': ''
-        }
+            'key': 'google',
+        },
     }
 }
-
 
 
 
@@ -163,6 +177,7 @@ USE_I18N = True
 
 USE_TZ = True
 
+LOGIN_REDIRECT_URL = '/protected'
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
@@ -194,6 +209,13 @@ SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
+
+# Allauth Settings
+ACCOUNT_EMAIL_REQUIRED = False  # Do not require email for registration
+ACCOUNT_USERNAME_REQUIRED = True  # Enforce username as required field
+ACCOUNT_EMAIL_VERIFICATION = 'none'  # Disable email verification
+SOCIALACCOUNT_EMAIL_REQUIRED = False  # Do not require email during social login
+SOCIALACCOUNT_USERNAME_REQUIRED = True  
 
 REST_FRAMEWORK_ROLES = {
     'ROLES': 'myproject.roles.ROLES',  # Replace with your actual path to roles
