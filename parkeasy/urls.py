@@ -16,7 +16,7 @@ urlpatterns = [
     #Multi-Factor authentication
     path('api/totp/create/', TOTPCreateView.as_view(), name='totp-create'),
     path('api/totp/verify/', TOTPVerifyView.as_view(), name='totp-verify'),
-    path('api/login/', LoginWith2FAView.as_view(), name='login-with-2fa'),
+    # path('api/login/', LoginWith2FAView.as_view(), name='login-with-2fa'),
     #allauth
     
     ]
