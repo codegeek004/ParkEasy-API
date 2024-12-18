@@ -34,6 +34,7 @@ class CustomUser(AbstractUser, PermissionsMixin):
     last_active = models.DateTimeField(null=True, blank=True, default=now) 
     latest_token = models.CharField(max_length=255, null=True, blank=True)
     is_2fa_enabled = models.BooleanField(default=False)
+    remember_me = models.BooleanField(default=False)
     objects = CustomUserManager()
 
     def update_last_active(self):

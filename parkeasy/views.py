@@ -81,14 +81,19 @@ class CustomTokenRefreshView(TokenRefreshView):
 
 class LoginView(APIView):
     print('login view mai gaya')
+    # 
     permission_classes = [AllowAny]
     def post(self, request):
+        remember_me = request.data.get('remember_me', False)
         serializer = LoginSerializer(data=request.data)
         if serializer.is_valid():
             user = authenticate(username=serializer.validated_data['username'],
                                 password=serializer.validated_data['password'])
             if user is not None:
+                
                 refresh = RefreshToken.for_user(user)
+                if remember_me:
+                    refresh.set_exp(lifetime=timedelta(days=7))
                 user.last_active = now()
                 user.latest_token = refresh.access_token['jti']
                 user.save()
@@ -214,28 +219,7 @@ class LoginWith2FAView(APIView):
 ####################DFA end########################
 
 
-######################AllAuth###########################
 
-class CustomGoogleAccountAdapter(DefaultSocialAccountAdapter):
-    
-    def pre_google_login(self, request, socialaccount):
-
-        user = socialaccount.user  
-        refresh = RefreshToken.for_user(user)
-        access_token = str(refresh.access_token)
-        refresh_token = str(refresh)
-
-        response_data = {
-            "access_token" : access_token,
-            "refresh_token" : refresh_token
-        }
-
-        print(f"access_token: {access_token}")
-        print(f"refrehs_token: {refresh_token}")
-
-        return Response(response_data)
-
-####################Allauth end##########################
 
 
 class SlotView(ListModelMixin, RetrieveModelMixin, CreateModelMixin, UpdateModelMixin, DestroyModelMixin, GenericAPIView):

@@ -162,6 +162,8 @@ AUTHENTICATION_BACKENDS = [
 
     # `allauth` specific authentication methods, such as login by email
     'allauth.account.auth_backends.AuthenticationBackend',
+    #remember me
+    # 'auth_remember.backend.AuthRememberBackend',
 
 ]
 
