@@ -196,25 +196,25 @@ class TOTPVerifyView(views.APIView):
             return Response({"message" : "TOTP verifid"}, status=status.HTTP_200_OK)
         return Response({"message" :"Invalid or expired oken"}, status=status.HTTP_400_BAD_REQUEST)
 
-class LoginWith2FAView(APIView):
-    def post(self, request, format=None):
-        username = request.data.get('username')
-        password = request.data.get('password')
-        token = request.data.get('token')
+# class LoginWith2FAView(APIView):
+#     def post(self, request, format=None):
+#         username = request.data.get('username')
+#         password = request.data.get('password')
+#         token = request.data.get('token')
 
-        user = authenticate(username=username, password=password)
-        if user:
-            device = TOTPDevice.objects.filter(user=user, confirmed=False).first()
+#         user = authenticate(username=username, password=password)
+#         if user:
+#             device = TOTPDevice.objects.filter(user=user, confirmed=False).first()
 
-            if device and device.confirmed:
-                if not device.verify_token(token):
-                    return Response({"error" : "Invalid TOTP code"}, status=status.HTTP_400_BAD_REQUEST)
-            refresh = RefreshToken.for_user(user)
-            return Response({
-                    "refresh" : str(refresh),
-                    "access" : str(refresh.access_token)
-                }, status=status.HTTP_200_OK)
-        return Response({"message" : "Invalid username or password"}, status=status.HTTP_400_BAD_REQUEST)
+#             if device and device.confirmed:
+#                 if not device.verify_token(token):
+#                     return Response({"error" : "Invalid TOTP code"}, status=status.HTTP_400_BAD_REQUEST)
+#             refresh = RefreshToken.for_user(user)
+#             return Response({
+#                     "refresh" : str(refresh),
+#                     "access" : str(refresh.access_token)
+#                 }, status=status.HTTP_200_OK)
+#         return Response({"message" : "Invalid username or password"}, status=status.HTTP_400_BAD_REQUEST)
 
 ####################DFA end########################
 
