@@ -12,7 +12,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 
 from pathlib import Path
 from datetime import timedelta
-
+from decouple import config
 import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
@@ -234,3 +234,19 @@ ROLES = {
     'user': ['can_view'],
 }
 AUTH_USER_MODEL = "parkeasy.CustomUser"
+
+
+
+#SMTP configurations
+
+EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+EMAIL_HOST = config("EMAIL_HOST", cast=str, default="yashvaishnav1411@gmail.com")
+EMAIL_PORT = config("EMAIL_PORT", cast=str, default="587")
+EMAIL_USE_TLS=True
+EMAIL_HOST_USER = config("EMAIL_HOST_USER", cast=str, default=None)
+EMAIL_HOST_PASSWORD = config("EMAIL_HOST_PASSWORD", cast=str, default=None)
+DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
+PASSWORD_RESET_BASE_URL = config('PASSWORD_RESET_BASE_URL', cast=str, default='http://127.0.0.1:8000/password/reset')
+
+
+
