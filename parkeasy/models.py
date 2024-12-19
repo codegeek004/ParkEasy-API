@@ -52,6 +52,11 @@ class ActiveToken(models.Model):
     def __str__(self):
         return f"Active Token : {self.user.username}"
 
+class PasswordReset(models.Model):
+    email = models.EmailField()
+    token = models.CharField(max_length=100)
+    created_at = models.DateField(auto_now_add=True)
+
 class Slots(models.Model):
     SlotID = models.AutoField(primary_key=True)  # Unique identifier for slots
     space = models.CharField(max_length=30, null=True, blank=True)
