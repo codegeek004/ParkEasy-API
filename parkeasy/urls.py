@@ -2,7 +2,6 @@ from django.urls import path, re_path, include
 from parkeasy.views import *
 from allauth.socialaccount.urls import urlpatterns as social_urls
 
-
 urlpatterns = [
 
     path('accounts/register/', RegisterView.as_view(), name="register"),
@@ -20,5 +19,5 @@ urlpatterns = [
     path('password/forgot/', ForgotPassword.as_view(), name='forgot-password'),
     path('password/reset/<uidb64>/<token>/', ResetPassword.as_view(), name='reset-password'),
     #allauth
-    
+    path('iplogin/', LoginAPIView.as_view(), name='iplogin')
     ]
