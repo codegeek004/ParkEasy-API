@@ -37,10 +37,12 @@ from django.core.mail import send_mail
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.utils.http import urlsafe_base64_decode
-
-
-#debugging
 from decouple import config
+
+#for ip address tracing and blocking the attacker
+from django.core.cache import cache
+from django.utils.timezone import now
+
 
 User = get_user_model()
 
@@ -193,6 +195,8 @@ class ResetPassword(generics.GenericAPIView):
             user.set_password(new_password)
             user.save()
 
+
+
             return Response({"success" : "Password reset successful"}, status=status.HTTP_201_CREATED)
 
         except(TypeError, ValueError, CustomUser.DoesNotExist):
@@ -278,6 +282,56 @@ class TOTPVerifyView(views.APIView):
 ####################DFA end########################
 
 
+########################Blocking Attacker's IP Address#############################
+
+MAX_ATTEMPTS = 2
+BLOCK_DURATION = 60*15
+
+def get_client_id(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[0]
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+        print('ip', ip)
+    return ip 
+
+class LoginAPIView(APIView):
+    permission_classes = [AllowAny]
+    
+
+    def post(self, request, *args, **kwargs):
+        serializer = LoginSerializer(data=request.data)
+        user = request.user
+        username = request.data.get('username')
+        password = request.data.get('password')
+        ip_address = get_client_id(request)
+        print(ip_address)
+
+
+        failed_attempts = cache.get(f"failed_attempts_{ip_address}", 0)
+
+        if failed_attempts >=MAX_ATTEMPTS:
+            return Response({"error" : "IP address blocked"}, status=status.HTTP_400_BAD_REQUEST)
+
+        user = authenticate(request, username=username, password=password)
+        print(failed_attempts, 'fail')
+        if user is None:
+            cache.set(f"failed_attempts_{ip_address}", failed_attempts+1, timeout=BLOCK_DURATION)
+            return Response({"message" : "Invalid credentials"}, status=status.HTTP_400_BAD_REQUEST)
+        refresh = RefreshToken.for_user(user)
+
+                
+        cache.delete(f"failed_attempts_{ip_address}")
+        return Response({
+                        'access' : str(refresh.access_token),
+                        'refresh' : str(refresh)
+                    })
+
+
+
+
+
 
 
 
@@ -343,7 +397,7 @@ class SlotView(ListModelMixin, RetrieveModelMixin, CreateModelMixin, UpdateModel
 from django.shortcuts import render
 import requests
 
-class slot_api:
+class slot_api():
     slot_endpoint = 'http://127.0.0.1:8000/slots/'
     def get_data(request):
         try:
