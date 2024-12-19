@@ -29,6 +29,17 @@ class RegisterSerializer(serializers.ModelSerializer):
         )
         return user
 
+class ForgotPasswordSerializer(serializers.Serializer):
+    email = serializers.EmailField(required=True)
+
+class ResetPasswordSerializer(serializers.Serializer):
+    new_password = serializers.RegexField(
+            regex = r'^(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$',
+            write_only = True,
+            error_messages = {"invalid" : ("Password must be 8 digits long with at least one capital and one special charactor")}
+        )
+    confirm_password = serializers.CharField(write_only=True, required=True)
+
 class LoginSerializer(serializers.Serializer):
 	username = serializers.CharField()
 	password = serializers.CharField()
