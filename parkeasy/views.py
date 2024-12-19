@@ -28,7 +28,19 @@ from django_otp.plugins.otp_totp.models import TOTPDevice
 #allauth
 from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 
+#forgot password
+from django.contrib.auth.tokens import PasswordResetTokenGenerator
+from .models import PasswordReset
+import os
+from rest_framework import generics
+from django.core.mail import send_mail
+from django.utils.http import urlsafe_base64_encode
+from django.utils.encoding import force_bytes
+from django.utils.http import urlsafe_base64_decode
 
+
+#debugging
+from decouple import config
 
 User = get_user_model()
 
@@ -123,6 +135,71 @@ class LogoutView(APIView):
         except ActiveToken.DoesNotExist:
             return Response({"error": "No active session found."}, status=status.HTTP_400_BAD_REQUEST)
 
+class ForgotPassword(generics.GenericAPIView):
+    permission_classes = [AllowAny]
+    serializer_class = ForgotPasswordSerializer
+
+    def post(self, request):
+        serializer = self.serializer_class(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        email = request.data['email']
+        user = CustomUser.objects.filter(email__iexact=email).first()
+
+        if user:
+            token = token_generator = PasswordResetTokenGenerator()
+            token = token_generator.make_token(user)
+            # reset = PasswordReset(email=email, token=token)
+            # reset.save()
+            try:
+                print('try mai gay')
+                print(config("PASSWORD_RESET_BASE_URL"))
+                print("User PK:", user.pk)
+                print("Token:", token)
+                print("Encoded PK:", urlsafe_base64_encode(force_bytes(user.pk)))
+                reset_url = f"{config('PASSWORD_RESET_BASE_URL')}/{urlsafe_base64_encode(force_bytes(user.pk))}/{token}"
+                print('reset_url',reset_url)
+                send_mail(
+                        subject = "Reset Your Password",
+                        message = f"Click the link below to reset your password:\n\n{reset_url}",
+                        from_email = "yashvaishnav1411@gmail.com",
+                        recipient_list = [email],
+                        fail_silently = False,
+                    )
+                return Response({"success" : "We have sent you an email"}, status=status.HTTP_200_OK)
+            except Exception as e:
+                print('except mai gaya')
+                print('The error is', e)
+
+            
+        return Response({"message" : "credentials not found"}, status=status.HTTP_400_BAD_REQUEST)
+
+class ResetPassword(generics.GenericAPIView):
+    serializer_class = ResetPasswordSerializer
+    permission_classes = []
+
+    def post(self, request, uidb64, token):
+        try:
+            user_id = urlsafe_base64_decode(uidb64).decode()
+            user = CustomUser.objects.get(pk=user_id)
+
+            token_generator = PasswordResetTokenGenerator()
+            if not token_generator.check_token(user, token):
+                return Response({"error" : "Invalid or expired token"}, status=status.HTTP_400_BAD_REQUEST)
+
+            serializer = self.serializer_class(data=request.data)
+            serializer.is_valid(raise_exception=True)
+
+            new_password = serializer.validated_data['new_password']
+            user.set_password(new_password)
+            user.save()
+
+            return Response({"success" : "Password reset successful"}, status=status.HTTP_201_CREATED)
+
+        except(TypeError, ValueError, CustomUser.DoesNotExist):
+            return Response({"error" : "Invalid request"}, status=status.HTTP_400_BAD_REQUEST)
+
+
+
 class ProtectedView(APIView):
     permission_classes = [IsAdmin]
     def post(self, request):
@@ -205,7 +282,7 @@ class TOTPVerifyView(views.APIView):
 
 
 class SlotView(ListModelMixin, RetrieveModelMixin, CreateModelMixin, UpdateModelMixin, DestroyModelMixin, GenericAPIView):
-    permission_classes = [AllowAny]
+    permission_classes = [IsAuthenticated]
     queryset = Slots.objects.all()
     serializer_class = SlotSerializer
     
