@@ -28,7 +28,7 @@ SECRET_KEY = 'django-insecure-l%6bb&g@$a$%5od79jg+0cq*kiykd0740(vv2f8t6hv1m1@4f+
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = []
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
@@ -249,4 +249,14 @@ DEFAULT_FROM_EMAIL = EMAIL_HOST_USER
 PASSWORD_RESET_BASE_URL = config('PASSWORD_RESET_BASE_URL', cast=str, default='http://127.0.0.1:8000/password/reset')
 
 
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django_redis.cache.RedisCache',
+        'LOCATION': 'redis://127.0.0.1:6379/1',  # Redis URL
+        'OPTIONS': {
+            'CLIENT_CLASS': 'django_redis.client.DefaultClient',
+        }
+    }
+}
 
