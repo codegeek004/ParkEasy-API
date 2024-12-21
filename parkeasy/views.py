@@ -501,7 +501,7 @@ from rest_framework.views import APIView
 from rest_framework import status
 from django.conf import settings
 class GoogleLoginCallback(APIView):
-    permission_classes = [IsAuthenticated]
+    permission_classes = [AllowAny]
     
     def get(self, request, *args, **kwargs):
         """
@@ -571,7 +571,8 @@ class GoogleLoginCallback(APIView):
 
         return Response({
             'access': access_token,
-            'refresh': refresh_token
+            'refresh': refresh_token,
+            'data' : data
         })
 class LoginGooglePage(View):
     def get(self, request, *args, **kwargs):
