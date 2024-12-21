@@ -30,6 +30,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
+SITE_ID = 1
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -53,10 +55,20 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
     'rest_framework.authtoken',
     'dj_rest_auth',
+    'dj_rest_auth.registration',
     #multi-factor authentication
     'django_otp',
     'django_otp.plugins.otp_totp'
 ]
+# ACCOUNT_AUTHENTICATION_METHOD = "email"  # Use Email / Password authentication
+# ACCOUNT_USERNAME_REQUIRED = False
+# ACCOUNT_EMAIL_REQUIRED = True
+# ACCOUNT_EMAIL_VERIFICATION = "none" # Do not require email confirmation
+
+# Google OAuth
+GOOGLE_OAUTH_CLIENT_ID = config("GOOGLE_OAUTH_CLIENT_ID")
+GOOGLE_OAUTH_CLIENT_SECRET =config("GOOGLE_OAUTH_CLIENT_SECRET")
+GOOGLE_OAUTH_CALLBACK_URL = config("GOOGLE_OAUTH_CALLBACK_URL")
     
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -118,21 +130,37 @@ DATABASES = {
 # #         }
 #     }
 # }
-SOCIALACCOUNT_ADAPTER = 'parkeasy.adapters.CustomGoogleAccountAdapter'
+
+# SOCIALACCOUNT_PROVIDERS = {
+#     'google': {
+#         'SCOPE': ['profile', 'email'],
+#         'AUTH_PARAMS': {'access_type': 'online'},
+#         'OAUTH_PKCE_ENABLED': True,
+#         'APP': {
+#             'client_id': '99034799467-hl9dbl4t4l64gftesd8bokb1no6kbgu3.apps.googleusercontent.com',
+#             'secret': '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',
+#             'key': 'google',
+#         },
+#     }
+# }
 
 SOCIALACCOUNT_PROVIDERS = {
     'google': {
         'SCOPE': ['profile', 'email'],
         'AUTH_PARAMS': {'access_type': 'online'},
-        'OAUTH_PKCE_ENABLED': True,
         'APP': {
-            'client_id': '99034799467-hl9dbl4t4l64gftesd8bokb1no6kbgu3.apps.googleusercontent.com',
-            'secret': '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',
+            'client_id': GOOGLE_OAUTH_CLIENT_ID,
+            'secret': GOOGLE_OAUTH_CLIENT_SECRET,
             'key': 'google',
         },
     }
 }
 
+#for oauth
+REST_AUTH_REGISTER_SERIALIZERS = {
+    'REGISTER_SERIALIZER': 'your_project.serializers.CustomRegisterSerializer',
+}
+SOCIALACCOUNT_ADAPTER = 'allauth.socialaccount.adapters.DefaultSocialAccountAdapter'
 
 
 # Password validation
@@ -225,6 +253,7 @@ REST_FRAMEWORK_ROLES = {
         'django.*',
         'allauth.*',
         'django_otp.*',
+        'rest_auth.*'
 
     ],
 }

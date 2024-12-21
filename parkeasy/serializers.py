@@ -2,8 +2,13 @@ from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import get_user_model
 from parkeasy.models import *
+from dj_rest_auth.registration.serializers import RegisterSerializer
 
 User = get_user_model()
+
+def CustomRegisterSerializer(RegisterSerializer):
+    def save(self, request):
+        return super().save(request)
 
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:

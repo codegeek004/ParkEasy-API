@@ -15,8 +15,7 @@ Including another URLconf
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
 from django.contrib import admin
-# from django.conf.urls import url
-from django.urls import path, include, re_path
+from django.urls import path, include
 
 
 urlpatterns = [
@@ -24,5 +23,8 @@ urlpatterns = [
     path('', include('parkeasy.urls')),
     # url(r'^rest-auth/', include('rest_auth.urls'))
     path('accounts/', include('allauth.urls')),
+    path('rest-auth/', include('dj_rest_auth.urls')),  # Auth endpoints (login, logout, etc.)
+    # path('rest-auth/registration/', include('dj_rest_auth.registration.urls')),  # User registration
+    # path('rest-auth/google/', include('allauth.socialaccount.urls')),  # Google OAuth
 ]
 
