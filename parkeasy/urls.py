@@ -25,17 +25,6 @@ urlpatterns = [
     path('password/reset/<uidb64>/<token>/', ResetPassword.as_view(), name='reset-password'),
     path('myslots/', slot_api.as_view(), name='slot-view'),
     path('iplogin/', LoginAPIView.as_view(), name='iplogin'),
-    #oauth
-    # path("login/", LoginGooglePage.as_view(), name="login"),
-    # path("api/v1/auth/", include("dj_rest_auth.urls")),
-    # re_path(r"^api/v1/auth/accounts/", include("allauth.urls")),
-    # path("api/v1/auth/registration/", include("dj_rest_auth.registration.urls")),
-    # path("api/v1/auth/google/", GoogleLogin.as_view(), name="google_login"),
-    # path(
-    #     "api/v1/auth/google/callback/",
-    #     GoogleLoginCallback.as_view(),
-    #     name="google_login_callback",
-    # ),
     path("login/", LoginGooglePage.as_view(), name="login"),
     path("api/v1/auth/", include("dj_rest_auth.urls")),  # for dj_rest_auth
     re_path(r"^api/v1/auth/accounts/", include("allauth.urls")),  # for allauth
