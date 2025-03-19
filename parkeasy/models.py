@@ -61,7 +61,7 @@ class Slots(models.Model):
     SlotID = models.AutoField(primary_key=True)  # Unique identifier for slots
     space = models.CharField(max_length=30, null=True, blank=True)
     price = models.IntegerField(null=True, blank=True)
-    total_slots = models.IntegerField(default=90)
+
 
 class Vehicle(models.Model):
     VehicleID = models.AutoField(primary_key=True)  # Unique identifier for vehicles
