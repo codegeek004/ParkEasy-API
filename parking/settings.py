@@ -119,48 +119,6 @@ DATABASES = {
     }
 }
 
-# SOCIALACCOUNT_PROVIDERS = {
-#     'google': {
-#         'SCOPE': ['profile', 'email'],
-#         'AUTH_PARAMS': {'access_type': 'online'},
-#         'APP': {
-#             'client_id': '99034799467-hl9dbl4t4l64gftesd8bokb1no6kbgu3.apps.googleusercontent.com',
-#             'secret': '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',
-#             'key': '',
-# #         }
-#     }
-# }
-
-# SOCIALACCOUNT_PROVIDERS = {
-#     'google': {
-#         'SCOPE': ['profile', 'email'],
-#         'AUTH_PARAMS': {'access_type': 'online'},
-#         'OAUTH_PKCE_ENABLED': True,
-#         'APP': {
-#             'client_id': '99034799467-hl9dbl4t4l64gftesd8bokb1no6kbgu3.apps.googleusercontent.com',
-#             'secret': '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',
-#             'key': 'google',
-#         },
-#     }
-# }
-
-SOCIALACCOUNT_PROVIDERS = {
-    'google': {
-        'SCOPE': ['profile', 'email'],
-        'AUTH_PARAMS': {'access_type': 'online'},
-        'APP': {
-            'client_id': GOOGLE_OAUTH_CLIENT_ID,
-            'secret': GOOGLE_OAUTH_CLIENT_SECRET,
-            'key': 'google',
-        },
-    }
-}
-
-#for oauth
-REST_AUTH_REGISTER_SERIALIZERS = {
-    'REGISTER_SERIALIZER': 'your_project.serializers.CustomRegisterSerializer',
-}
-SOCIALACCOUNT_ADAPTER = 'allauth.socialaccount.adapters.DefaultSocialAccountAdapter'
 
 
 # Password validation
