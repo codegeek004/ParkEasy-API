@@ -13,7 +13,7 @@ def CustomRegisterSerializer(RegisterSerializer):
 class RegisterSerializer(serializers.ModelSerializer):
     class Meta:
         model = CustomUser
-        fields = ['username', 'password', 'email']
+        fields = ['username', 'password', 'email', 'role']
         extra_kwargs = {'password': {'write_only': True}}
 
     def create(self, validated_data):
@@ -60,4 +60,14 @@ class SlotSerializer(serializers.ModelSerializer):
         model = Slots 
         # fields = ['space', 'price', 'total_slots']
         fields = "__all__"
+    def create(self, validated_data):
+        space = validated_data.get('space')
+        if space not in ['car/jeep', '2-wheeler', 'heavy-vehicle']:
+            raise serializers.ValidationError({"space": "Invalid space selected"})
+        slot = Slots.objects.create(
+                space = space,
+                price = validated_data['price'],
+            )
+        return slot
+
 
