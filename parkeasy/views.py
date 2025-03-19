@@ -3,18 +3,18 @@ from django.contrib.auth import authenticate
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAuthenticated
-from django.http import HttpResponse
+from rest_framework.permissions import *
 from parkeasy.serializers import *
-from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework.generics import ListAPIView
 from .models import *
-from rest_framework.permissions import AllowAny
 from .permissions import IsAdmin
-from rest_framework_simplejwt.views import TokenRefreshView
-from rest_framework_simplejwt.exceptions import InvalidToken
 from datetime import timedelta
 from django.contrib.auth import get_user_model
+
+#jwt
+from rest_framework_simplejwt.views import TokenRefreshView
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.exceptions import InvalidToken
 
 #mixins
 from rest_framework.mixins import ListModelMixin, RetrieveModelMixin, CreateModelMixin, UpdateModelMixin, DestroyModelMixin
@@ -25,9 +25,6 @@ from django.shortcuts import get_object_or_404
 from rest_framework import views, permissions
 from django_otp import devices_for_user
 from django_otp.plugins.otp_totp.models import TOTPDevice
-
-#allauth
-from allauth.socialaccount.adapter import DefaultSocialAccountAdapter
 
 #forgot password
 from django.contrib.auth.tokens import PasswordResetTokenGenerator
@@ -53,20 +50,19 @@ class HomeView(APIView):
         return Response({"message" : "Welcome to the JWT API"})
 
 class RegisterView(APIView):
-    print('register view class mai gaya')
     permission_classes = [AllowAny]
+
     def post(self, request):
-        print('post method mai gaya')
         serializer = RegisterSerializer(data=request.data)
+        
         if serializer.is_valid():
-            print('serializer is valid mai gaya')
             user = serializer.save()
             return Response({"message": "User created successfully"}, status=status.HTTP_201_CREATED)
-        print('print serializer is valid wale if ke bahar')
+        
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class CustomTokenRefreshView(TokenRefreshView):
-    print('custome refresh view mai gaya')
+
     def post(self, request, *args, **kwargs):
         try: 
             refresh_token = request.data.get("refresh")
@@ -205,14 +201,8 @@ class ResetPassword(generics.GenericAPIView):
 
 class ProtectedView(APIView):
     permission_classes = [IsAdmin]
-    def post(self, request):
-        token = request.data.get('token')
-        user = request.user   
-        devices = list(devices_for_user(user))
-        device = devices[0] if devices else None
-        if device and device.verify_token(token):
-            return Response({"detail" : "access granted"}, status=status.HTTP_200_OK)
-        return Response({"message" : "TOTP is incorrect"}, status=status.HTTP_400_BAD_REQUEST)
+    def get(self, request):
+        return Response({"success" : "You are in Protected View"}, status=status.HTTP_200_OK)
 
 class VehicleView(APIView):
     permission_classes = [IsAuthenticated]
@@ -331,16 +321,20 @@ class LoginAPIView(APIView):
 
 class SlotView(ListModelMixin, RetrieveModelMixin, CreateModelMixin, UpdateModelMixin, DestroyModelMixin, GenericAPIView):
     permission_classes = [IsAuthenticated]
-    queryset = Slots.objects.all()
     serializer_class = SlotSerializer
+    queryset = Slots.objects.all()
     
+    # if you want to retrieve rows based on pk like 'http://127.0.0.1:8000/slots/1/'
     def get_object_or_404(self, pk):
+        print('inside get objects or 404')
         try:
             return Slots.objects.get(SlotID=pk)
         except Slots.DoesNotExist:
-            raise Response({"message": f"Slot {pk} not found"}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"message": f"Slot {pk} not found"}, status=status.HTTP_404_NOT_FOUND)
 
+    # if you want to fetch all the rows
     def get(self, request, *args, **kwargs):
+        print('inside get self, request')
         pk = kwargs.get('pk')
         if pk:
             slot = self.get_object_or_404(pk)
@@ -353,18 +347,20 @@ class SlotView(ListModelMixin, RetrieveModelMixin, CreateModelMixin, UpdateModel
         return super().create(request, *args, **kwargs)
 
     def put(self, request, *args, **kwargs):
+
         SlotID = kwargs.get('pk')
+        print('SlotID', SlotID)
         if SlotID:
             slot = self.get_object_or_404(SlotID)
             serializer = self.get_serializer(slot, data=request.data)
             if serializer.is_valid():
+                print('serializer is valid')
                 serializer.save()
                 return Response(serializer.data)
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
         return Response({"message" : "SlotID is required"}, status=status.HTTP_400_BAD_REQUEST)
 
     def patch(self, request, *args, **kwargs):
-        print('patch mai gaya')
         SlotID = kwargs.get('pk')
         if SlotID:
             slot = self.get_object_or_404(SlotID)
@@ -382,8 +378,9 @@ class SlotView(ListModelMixin, RetrieveModelMixin, CreateModelMixin, UpdateModel
             slot = self.get_object_or_404(SlotID)
             print('slot', slot)
             slot.delete()
-            return Response({"message" : "Slot {SlotID} deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+            return Response({"message" : f"Slot {SlotID} deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
         return Response({"message" : "SlotID is required for deleting."}, status=status.HTTP_400_BAD_REQUEST)
+
 
 
 
