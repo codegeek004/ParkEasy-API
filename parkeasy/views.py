@@ -396,25 +396,26 @@ class slot_api(View):
     permission_classes = [IsAuthenticated]
     slot_endpoint = 'http://127.0.0.1:8000/slots/'
     def get(self, request):
-        user = request.user
+        user = request.user.username
         print('user', user)
-        try:
-            headers = {
-                "Authorization" : f"Bearer {request.user.auth_token}"
-            }
-            print('try mai gaya')
-            response = requests.get(self.slot_endpoint, headers=headers)
-            print(response, 'response')
-            response.raise_for_status()
-            #parsing the json payload
-            data = response.json()
-            print(data)
+        # print('token', request.user.auth_token)
+        # try:
+        print('try mai gaya')
+        # headers = {
+        #         "Authorization" : f"Bearer {request.user.auth_token}"
+        # }
+        # print('headers', headers)
+        # print('try mai gaya')
+        # response = requests.get(self.slot_endpoint, headers=headers)
+        print(response, 'response')
+        response.raise_for_status()
+        #parsing the json payload
+        data = response.json()
+        print(data)
 
-        except Exception as e:
-            print('exception hai', e)
+        # except Exception as e:
+            # print('exception hai', e)
         return render(request, 'slots.html', {'api_data' : data})
-
-    # def post_data(r)
 
 
 
