@@ -65,10 +65,7 @@ INSTALLED_APPS = [
 # ACCOUNT_EMAIL_REQUIRED = True
 # ACCOUNT_EMAIL_VERIFICATION = "none" # Do not require email confirmation
 
-# Google OAuth
-GOOGLE_OAUTH_CLIENT_ID = config("GOOGLE_OAUTH_CLIENT_ID")
-GOOGLE_OAUTH_CLIENT_SECRET =config("GOOGLE_OAUTH_CLIENT_SECRET")
-GOOGLE_OAUTH_CALLBACK_URL = config("GOOGLE_OAUTH_CALLBACK_URL")
+
     
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -198,12 +195,7 @@ SIMPLE_JWT = {
 }
 
 
-# Allauth Settings
-ACCOUNT_EMAIL_REQUIRED = False  # Do not require email for registration
-ACCOUNT_USERNAME_REQUIRED = True  # Enforce username as required field
-ACCOUNT_EMAIL_VERIFICATION = 'none'  # Disable email verification
-SOCIALACCOUNT_EMAIL_REQUIRED = False  # Do not require email during social login
-SOCIALACCOUNT_USERNAME_REQUIRED = True  
+
 
 REST_FRAMEWORK_ROLES = {
     'ROLES': 'myproject.roles.ROLES',  # Replace with your actual path to roles
