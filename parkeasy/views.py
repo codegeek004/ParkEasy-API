@@ -204,20 +204,6 @@ class ProtectedView(APIView):
     def get(self, request):
         return Response({"success" : "You are in Protected View"}, status=status.HTTP_200_OK)
 
-class VehicleView(APIView):
-    permission_classes = [IsAuthenticated]
-    def get(self, request):
-        vehicles = Vehicle.objects.all()
-        print(vehicles)
-        serializer = VehicleSerializer(vehicles, many=True)
-        print(serializer.data)
-        return Response(serializer.data)
-    def post(self, request, format=None):
-        serializer = VehicleSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 ############################ Multi-Factor Authentication ##########################
 def get_user_totp_device(user, confirmed=None):
@@ -318,7 +304,7 @@ class LoginAPIView(APIView):
                     })
 
 
-
+###################### application endpoints ################################
 class SlotView(ListModelMixin, RetrieveModelMixin, CreateModelMixin, UpdateModelMixin, DestroyModelMixin, GenericAPIView):
     permission_classes = [IsAuthenticated]
     serializer_class = SlotSerializer
@@ -382,6 +368,20 @@ class SlotView(ListModelMixin, RetrieveModelMixin, CreateModelMixin, UpdateModel
         return Response({"message" : "SlotID is required for deleting."}, status=status.HTTP_400_BAD_REQUEST)
 
 
+class VehicleView(APIView):
+    permission_classes = [IsAuthenticated]
+    def get(self, request):
+        vehicles = Vehicle.objects.all()
+        print(vehicles)
+        serializer = VehicleSerializer(vehicles, many=True)
+        print(serializer.data)
+        return Response(serializer.data)
+    def post(self, request, format=None):
+        serializer = VehicleSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 
